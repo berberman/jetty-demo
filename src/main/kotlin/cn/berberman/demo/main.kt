@@ -8,25 +8,15 @@ fun Array<String>.main() {
 	server.handler = handler {
 		get("/") {
 			sendText("2333")
-			finish()
 		}
 		get("/233") {
 			sendText("{3")
-			finish()
+		}
+		post("/eee") {
+			logger.info(getBody())
+			sendText("gg")
 		}
 	}
-//	server.handler = object : AbstractHandler() {
-//		override fun handle(target: String?, baseRequest: Request?, request: HttpServletRequest?, response: HttpServletResponse?) {
-//			val logger=StdErrLog.getLogger(this::class.java)
-//			logger.info(request!!.pathInfo)
-//			logger.info(request!!.pathTranslated)
-//			logger.info(request!!.requestURI)
-//			logger.info(baseRequest!!.originalURI)
-//			logger.info("233")
-//			response!!.sendText("233")
-//			baseRequest!!.finish()
-//		}
-//	}
 	server.start()
 	server.join()
 }
