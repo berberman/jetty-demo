@@ -21,11 +21,30 @@ class RequestProcessor(val path: String, private val block: RequestProcessor.() 
 			response.status = field
 		}
 
-	fun sendText(message: String) {
-		response.sendText(message)
-	}
+	fun sendText(message: String) =
+			response.sendText(message)
+
+
+	fun sendJson(json: String) =
+			response.sendJson(json)
+
+	fun sendHtml(html: String) =
+			response.sendHtml(html)
+
+	fun redirect(url: String) =
+			response.redirect(url)
+
+	fun sendObjectAsJson(any: Any) =
+			sendJson(any.toJson())
 
 	fun getBody(): String = request.getBody()
+
+	inline fun <reified T> getBodyAsObject(onError: (ClassCastException) -> T) =
+			accessRequest.getBodyAsObject(onError)
+
+	@PublishedApi
+	internal val accessRequest: HttpServletRequest
+		get() = request
 
 	private fun finish() = baseRequest.finish()
 
@@ -39,7 +58,7 @@ class RequestProcessor(val path: String, private val block: RequestProcessor.() 
 	}
 }
 
-class DslHandlerBuilder {
+class HandlerBuilder {
 
 	fun get(path: String, block: RequestProcessor.() -> Unit) = runReturnUnit { RequestProcessor(path, block).let(ProcessorHolder.getList::add) }
 	fun post(path: String, block: RequestProcessor.() -> Unit) = runReturnUnit { RequestProcessor(path, block).let(ProcessorHolder.postList::add) }
@@ -56,10 +75,10 @@ object ProcessorHolder {
 	val postList = mutableListOf<RequestProcessor>()
 }
 
-fun handler(block: DslHandlerBuilder.() -> Unit) = object : AbstractHandler() {
+fun handler(block: HandlerBuilder.() -> Unit) = object : AbstractHandler() {
 
 	init {
-		DslHandlerBuilder().apply(block)
+		HandlerBuilder().block()
 	}
 
 	override fun handle(target: String?, baseRequest: Request?, request: HttpServletRequest?, response: HttpServletResponse?) {
