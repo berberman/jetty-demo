@@ -14,7 +14,6 @@ import org.eclipse.jetty.http.HttpStatus
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.AbstractHandler
-import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -44,16 +43,18 @@ class SimpleServer(port: Int, block: SimpleServer.() -> Unit) : Server(port) {
 				val routeMeta = RouteMeta(target!!, baseRequest!!, request!!, response!!, null)
 				val targetRequest = routeMeta.request
 				var targetPath = routeMeta.target
-				val method = HttpMethod.fromString(targetRequest.method) ?: null ?: throw ServletException("什么情况？？")
+				val method = HttpMethod.fromString(targetRequest.method) ?: null
 				logger.info("请求:\n目标地址:$targetPath\n请求方法:$method\n请求IP:${targetRequest.remoteAddr}")
 
-				fun RequestProcessor.convertToNormalPath() =
-						if (isPathVariable) {
-							val path = targetPath.substring(0, path.length)
-							val variable = targetPath.substring(path.length, targetPath.length)
-							routeMeta.pathVariable = variable
-							targetPath = path
-						} else Unit
+				fun RequestProcessor.convertToNormalPath() = try {
+					if (isPathVariable) {
+						val path = targetPath.substring(0, path.length)
+						val variable = targetPath.substring(path.length, targetPath.length)
+						routeMeta.pathVariable = variable
+						targetPath = path
+					} else Unit
+				} catch (e: StringIndexOutOfBoundsException) {
+				}
 
 				when (method) {
 					HttpMethod.GET    -> holder.getList.firstOrNull { it.apply { convertToNormalPath() }.path == targetPath }?.invoke(routeMeta)

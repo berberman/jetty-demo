@@ -39,7 +39,8 @@ class RequestProcessor(var path: String, private val block: RequestProcessor.() 
 
 	fun getPathVariable() = pathVariable
 
-	fun getParameter(name: String, onError: () -> String = { "" }) = request.getParameter(name) ?: onError()
+	fun getParameter(name: String, onError: () -> String = { "" }) =
+			request.getParameter(name) ?: onError()
 
 	inline fun <reified T> getBodyAsObject(onError: (ClassCastException) -> T) =
 			accessRequest.getBodyAsObject(onError)
@@ -56,6 +57,7 @@ class RequestProcessor(var path: String, private val block: RequestProcessor.() 
 		request = meta.request
 		pathVariable = meta.pathVariable
 		block()
+//		logger.info(request.getAttribute("javax.servlet.error.exception")?.toString()?:"null")
 		finish()
 		logger.info("请求处理完成")
 	}
