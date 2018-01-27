@@ -30,22 +30,24 @@ fun HttpServletResponse.sendJson(json: String) {
 	writer.flush()
 }
 
-inline fun <reified T> HttpServletRequest.getBodyAsObject(onError: (ClassCastException) -> T): T = try {
-	gson.fromJson(getBody(), T::class.java)
-} catch (e: ClassCastException) {
-	onError(e)
-}
+inline fun <reified T> HttpServletRequest.getBodyAsObject(onError: (ClassCastException) -> T): T =
+		try {
+			gson.fromJson(getBody(), T::class.java)
+		} catch (e: ClassCastException) {
+			onError(e)
+		}
 
 
 fun HttpServletRequest.getBody(): String = reader.lines().collect(Collectors.joining(System.lineSeparator()))
 
 inline fun <T> runReturnUnit(block: () -> T) = run { block();Unit }
 
-fun HttpServletResponse.redirect(url: String) {
-	sendRedirect(url)
-}
+fun HttpServletResponse.redirect(url: String) =
+		sendRedirect(url)
+
 
 fun Any.toJson(): String = gson.toJson(this)
 
 val gson = Gson()
+
 val logger: StdErrLog = StdErrLog.getLogger(HandlerBuilder::class.java)
